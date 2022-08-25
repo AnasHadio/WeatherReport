@@ -1,0 +1,175 @@
+<html>
+	<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+	<script type="text/javascript">
+	$(document).ready(function(){
+		
+		$("#weatherBtn").click(function(){
+		
+			var zipCode = $("#zip").val();
+			
+			$.ajax({
+				
+				type: "GET",
+				url: "weatherFile.php",
+				data: "zip=" + zipCode,
+						
+						
+				beforeSend: function(){
+					// removing the class that removes the display of the spinner
+					// and adding the one that does show the spinner
+					$('#loader').removeClass("hideLoader");
+					$('#loader').addClass("showLoader");
+				},
+						
+				error: function(xhr, status, error) {
+					alert("Error Message: \r\nNumeric code is: " + xhr.status + "\r\nError is: " + error);
+				},
+						
+				success: function(result) {
+					// removing the class that shows the display of the spinner
+					// and adding the one that removes the spinner 
+					$('#loader').removeClass("showLoader");
+					$('#loader').addClass("hideLoader");
+					
+					// checking to see if the zip code is empty
+					if (zipCode != '') {
+					
+						// checking the length of the zip code
+						if (zipCode.length == 5) {
+						
+							// seeing what returns depending on the match parameters
+							var testZipCode = zipCode.match(/^[0-9]{5}?/gi);
+							
+							// testing to see if the zip code has only digits
+							if (testZipCode != null) {
+								if (result == '') {
+									$("#weatherContent").html("The zip code you entered doesn't exist for any town! Please try another!");
+								} else {
+								
+									temp = JSON.parse(result);
+									
+									// getting the icon for the weather
+									var imageCode = '<img src="http://openweathermap.org/img/wn/' + temp.weather[0].icon + '.png">';
+									
+									// getting the epoch and current time
+									var sunriseTime = temp.sys.sunrise;
+									var time = new Date();
+									
+									// Months array
+									var months_arr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                                                                                             
+									// Convert timestamp to milliseconds
+									var date = new Date(sunriseTime*1000);
+                                 
+									// Year
+									var year = date.getFullYear();
+									var year1 = time.getFullYear();
+                                                 
+									// Month
+									var month = months_arr[date.getMonth()];
+									var month1 = months_arr[time.getMonth()];
+                                                           
+									// Day
+									var day = date.getDate();
+									var day1 = time.getDate();
+                                            
+									// Hours
+									var hours = date.getHours();
+									var hours1 = time.getHours();
+                                               
+									// Minutes
+									var minutes = "0" + date.getMinutes();
+									var minutes1 = "0" + time.getMinutes();
+                                     
+									// Seconds
+									var seconds = "0" + date.getSeconds();
+									var seconds1 = "0" + time.getSeconds();
+                                     
+									// Display date time in MM-dd-yyyy h:m:s format
+									var timeOfSunrise = month + '/' + day + '/'+ year + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+									var currentTime   = month1 + '/' + day1 + '/' + year1 + ' ' + hours1 + ':' + minutes1.substr(-2) + ':' + seconds1.substr(-2);
+									
+									// getting the temperature in farenheit
+									var tempFarenheit = ((temp.main.temp * 9/5) + 32);
+									
+									// displaying all the content
+									content = "<br><br>" +
+											  "<br>City: " 				+ temp.name + "" 				+
+											  "<br>Coordinates: " 		+ temp.coord.lon + ", " + temp.coord.lat    +
+											  "<br>Temperature: " 		+ tempFarenheit + "&deg;F"   	+
+											  "<br>Weather: " 			+ temp.weather[0].main + " " 	+ imageCode +
+											  "<br>Description of Weather: " 		+ temp.weather[0].description   +
+											  "<br>Humidity: " 			+ temp.main.humidity + "%" 		+
+											  "<br>Wind Speed: " 		+ temp.wind.speed + " mph" 		+
+											  "<br>Sunrise/epoch: " 	+ timeOfSunrise + "" 				+
+											  "<br>Current Time: " 		+ currentTime + "" 			+
+											  "<br><br>";
+											  
+									$("#weatherContent").html(content);
+								};
+							} else {
+								$("#weatherContent").html("You entered a false character with your Zip Code! Please try again!");
+							};	
+						} else {
+							$("#weatherContent").html("The zip code you entered isn't 5 Digits! Please try another!");
+						};
+					} else {
+						$("#weatherContent").html("Please enter a Zip Code");
+					};
+				}
+				
+			});
+		});
+		
+	});
+
+	</script>
+	
+	<style>
+		#weatherStyle {
+			margin: auto;
+			border-radius: 15px;
+			width: 50%;
+			border: 2px solid green;
+			padding: 15px;
+		}
+		
+		.loader {
+		  display: none;
+		  border: 6px solid black;
+		  border-radius: 50%;
+		  border-top: 6px solid red;
+		  width: 17px;
+		  height: 17px;
+		  animation: spin 2s linear infinite;
+		}
+		
+		@keyframes spin {
+		  0% { transform: rotate(0deg); }
+		  100% { transform: rotate(360deg); }
+		}
+		
+		.showLoader {
+			display: block;
+		}
+		
+		.hideLoader {
+			display: none;
+		}
+	</style>
+	
+	</head>
+	
+	<body>
+	<div id="weatherStyle">
+		<h1>Weather Report</h1>
+		 <input id="zip" type="text" name="zip" placeholder="Zipcode" autocomplete="off" min="0" required>
+		 <button id="weatherBtn" type="button"><b>CLICK THE BUTTON FOR THE WEATHER</b></button><br><br>
+		 <div class="loader" id="loader"></div>
+		 <div id="weatherContent"></div>
+	</div>
+	</body>
+</html>
